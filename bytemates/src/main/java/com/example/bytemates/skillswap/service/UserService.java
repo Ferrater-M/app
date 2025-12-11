@@ -1,5 +1,6 @@
 package com.example.bytemates.skillswap.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,7 +23,11 @@ public class UserService {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("Email already taken");
         }
+        
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        
+        user.setDateJoined(LocalDate.now());
+        
         return userRepository.save(user);
     }
 

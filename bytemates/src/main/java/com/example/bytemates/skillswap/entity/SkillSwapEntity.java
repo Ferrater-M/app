@@ -45,4 +45,7 @@ public class SkillSwapEntity {
     @ManyToOne
     @JoinColumn(name = "offer_id", nullable = false)
     private SkillOfferEntity targetOffer;
+
+    @Column(columnDefinition = "boolean default false")
+    private boolean deleted = false;
 }

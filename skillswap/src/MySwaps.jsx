@@ -10,8 +10,10 @@ const MySwaps = () => {
     const [filter, setFilter] = useState('All'); 
     const [loading, setLoading] = useState(true);
     
+    // --- MODAL STATES ---
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [reviewTargetSwap, setReviewTargetSwap] = useState(null);
+    const [detailsSwap, setDetailsSwap] = useState(null); // New state for the details window
     
     const [notificationCount, setNotificationCount] = useState(0); 
 
@@ -66,7 +68,6 @@ const MySwaps = () => {
 
     const handleAction = async (swapId, action) => {
         try {
-            // FIX: Ensure authentication token is sent with PUT requests if necessary
             const token = localStorage.getItem('token');
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
@@ -137,56 +138,66 @@ const MySwaps = () => {
         .page-header { margin-bottom: 30px; }
         .page-title { font-size: 1.8rem; font-weight: 800; color: #000; margin-bottom: 20px; }
 
-        /* --- FILTER BAR (Refined Appearance) --- */
         .filter-bar { 
-            display: flex; 
-            gap: 10px; 
-            background: #f0f0f0; 
-            padding: 4px; 
-            border-radius: 50px; 
-            width: fit-content; 
+            display: flex; gap: 10px; background: #f0f0f0; padding: 4px; border-radius: 50px; width: fit-content; 
             box-shadow: 0 1px 5px rgba(0,0,0,0.05); 
         }
         .filter-btn { 
-            padding: 8px 24px; 
-            border-radius: 20px; 
-            border: none; 
-            background: transparent; 
-            font-weight: 600; 
-            color: #666; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            font-size: 0.9rem; 
-            font-family: 'Inter', sans-serif; 
+            padding: 8px 24px; border-radius: 20px; border: none; background: transparent; 
+            font-weight: 600; color: #666; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; font-family: 'Inter', sans-serif; 
         }
-        .filter-btn:hover:not(.active) { 
-            background: #e5e5e5; 
-        }
-        .filter-btn.active { 
-            background: #000; 
-            color: #ffffff; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2); 
-            transform: translateY(-1px); 
-        }
-        /* -------------------------------------- */
+        .filter-btn:hover:not(.active) { background: #e5e5e5; }
+        .filter-btn.active { background: #000; color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transform: translateY(-1px); }
 
-        .swap-card { background: white; border-radius: 16px; padding: 25px; border: 1px solid #e0e0e0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; flex-direction: column; gap: 20px; transition: transform 0.2s; }
+        .swap-card { background: white; border-radius: 16px; padding: 25px; border: 1px solid #e0e0e0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px; transition: transform 0.2s; }
         .swap-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
         
         .card-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; }
-        .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; align-self: center;}
         .status-pending { background: #fff3cd; color: #856404; }
         .status-accepted { background: #cce5ff; color: #004085; }
         .status-completed { background: #d4edda; color: #155724; }
         .status-rejected { background: #f8d7da; color: #721c24; }
-        .swap-date { color: #888; font-size: 0.85rem; font-weight: 500; }
+        
+        .swap-date { color: #888; font-size: 0.85rem; font-weight: 500; margin-left: auto; }
 
         .card-main { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
         .swap-party { display: flex; align-items: center; gap: 15px; width: 40%; }
         .party-avatar { width: 50px; height: 50px; border-radius: 50%; background: #eee; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666; border: 1px solid #ddd; }
         .party-info h3 { font-size: 1rem; font-weight: 700; color: #000; margin: 0 0 4px 0; }
         .party-info p { font-size: 0.85rem; color: #666; margin: 0; }
-        .swap-icon { font-size: 1.5rem; color: #007bff; display: flex; align-items: center; justify-content: center; width: 20%; }
+        
+        /* --- CLICKABLE SWAP ICON --- */
+        .swap-icon { 
+            font-size: 1.8rem; 
+            color: #007bff; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 20%; 
+            cursor: pointer; /* Makes it look clickable */
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+        .swap-icon:hover {
+            transform: scale(1.2);
+            color: #0056b3;
+        }
+        .swap-icon::after {
+            content: 'View Details';
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.7rem;
+            color: #007bff;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+        .swap-icon:hover::after {
+            opacity: 1;
+        }
+        /* --------------------------- */
 
         .card-actions { display: flex; gap: 15px; border-top: 1px solid #f0f0f0; padding-top: 20px;}
         .btn { flex: 1; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; text-align: center; border: none; font-family: 'Inter', sans-serif; }
@@ -198,6 +209,26 @@ const MySwaps = () => {
         .btn-complete { background: #000; color: white; } 
 
         .no-swaps { text-align: center; padding: 50px; color: #888; font-style: italic; background: white; border-radius: 12px; border: 1px solid #e0e0e0; }
+
+        /* --- DETAILS MODAL STYLES --- */
+        .details-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); z-index: 2000; 
+            display: flex; justify-content: center; align-items: center;
+        }
+        .details-modal-content {
+            background: white; width: 90%; max-width: 400px; 
+            padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center; position: relative;
+        }
+        .details-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: #000; }
+        .details-row { margin-bottom: 15px; text-align: left; }
+        .details-label { font-size: 0.8rem; font-weight: 700; color: #888; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .details-value { font-size: 1.1rem; font-weight: 600; color: #333; }
+        .close-details-btn { 
+            margin-top: 20px; background: #000; color: white; border: none; 
+            padding: 10px 24px; border-radius: 30px; font-weight: 700; cursor: pointer; width: 100%;
+        }
     `;
 
     return (
@@ -209,19 +240,11 @@ const MySwaps = () => {
                         <div className="logo" onClick={() => navigate('/dashboard')}>SkillSwap</div>
                         <div className="nav-tabs">
                             <button className="nav-tab" onClick={() => navigate('/dashboard')}>Browse Skills</button>
-                            
-                            {/* MESSAGES TAB */}
-                            <button className="nav-tab" onClick={() => navigate('/messages')}>
-                                Messages
-                            </button>
-                            
-                            {/* MY SWAPS TAB (Notification badge moved here) */}
+                            <button className="nav-tab" onClick={() => navigate('/messages')}>Messages</button>
                             <button className="nav-tab active" onClick={() => navigate('/myswaps')}>
                                 MySwaps
                                 {notificationCount > 0 && (
-                                    <span className="notification-badge">
-                                        {notificationCount}
-                                    </span>
+                                    <span className="notification-badge">{notificationCount}</span>
                                 )}
                             </button>
                         </div>
@@ -246,52 +269,96 @@ const MySwaps = () => {
                             {filteredSwaps.length === 0 ? (
                                 <div className="no-swaps">No swaps found.</div>
                             ) : (
-                                filteredSwaps.map(swap => (
-                                    <div className="swap-card" key={swap.swapId}>
-                                        <div className="card-top">
-                                            <span className={`status-badge status-${swap.status.toLowerCase()}`}>{swap.status}</span>
-                                            <span className="swap-date">{swap.date}</span>
-                                        </div>
-
-                                        <div className="card-main">
-                                            <div className="swap-party">
-                                                <div className="party-avatar">{swap.requester.name.charAt(0)}</div>
-                                                <div className="party-info"><h3>{swap.requester.name}</h3><p>Learner</p></div>
+                                filteredSwaps.map(swap => {
+                                    return (
+                                        <div className="swap-card" key={swap.swapId}>
+                                            <div className="card-top">
+                                                <span className={`status-badge status-${swap.status.toLowerCase()}`}>{swap.status}</span>
+                                                <span className="swap-date">{swap.date}</span>
                                             </div>
-                                            <div className="swap-icon">⇄</div>
-                                            <div className="swap-party" style={{justifyContent: 'flex-end', textAlign: 'right'}}>
-                                                <div className="party-info"><h3>{swap.targetOffer.user.name}</h3><p>Teacher</p></div>
-                                                <div className="party-avatar" style={{background: '#FFC300', color: '#000'}}>{swap.targetOffer.user.name.charAt(0)}</div>
+
+                                            <div className="card-main">
+                                                <div className="swap-party">
+                                                    <div className="party-avatar">{swap.requester.name.charAt(0)}</div>
+                                                    <div className="party-info"><h3>{swap.requester.name}</h3><p>Learner</p></div>
+                                                </div>
+                                                
+                                                {/* --- CLICKABLE SWAP ICON --- */}
+                                                <div 
+                                                    className="swap-icon" 
+                                                    title="Click for Details"
+                                                    onClick={() => setDetailsSwap(swap)}
+                                                >
+                                                    ⇄
+                                                </div>
+                                                {/* --------------------------- */}
+
+                                                <div className="swap-party" style={{justifyContent: 'flex-end', textAlign: 'right'}}>
+                                                    <div className="party-info"><h3>{swap.targetOffer.user.name}</h3><p>Teacher</p></div>
+                                                    <div className="party-avatar" style={{background: '#FFC300', color: '#000'}}>{swap.targetOffer.user.name.charAt(0)}</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="card-actions">
+                                                <button className="btn btn-message" onClick={() => navigate('/messages', { state: { partner: swap.requester.userId === user.userId ? swap.targetOffer.user : swap.requester } })}>Message</button>
+                                                
+                                                {swap.status === 'PENDING' && swap.targetOffer.user.userId === user?.userId && (
+                                                    <>
+                                                        <button className="btn btn-accept" onClick={() => handleAction(swap.swapId, 'accept')}>Accept</button>
+                                                        <button className="btn btn-reject" onClick={() => handleAction(swap.swapId, 'reject')}>Reject</button>
+                                                    </>
+                                                )}
+                                                
+                                                {swap.status === 'ACCEPTED' && (
+                                                    <button className="btn btn-complete" onClick={() => handleAction(swap.swapId, 'complete')}>✔ Mark Complete</button>
+                                                )}
+                                                
+                                                {swap.status === 'COMPLETED' && (
+                                                    <button className="btn btn-review" onClick={() => handleLeaveReviewClick(swap)}>★ Leave Review</button>
+                                                )}
                                             </div>
                                         </div>
-
-                                        <div className="card-actions">
-                                            <button className="btn btn-message" onClick={() => navigate('/messages', { state: { partner: swap.requester.userId === user.userId ? swap.targetOffer.user : swap.requester } })}>Message</button>
-                                            
-                                            {/* PENDING ACTIONS  */}
-                                            {swap.status === 'PENDING' && swap.targetOffer.user.userId === user?.userId && (
-                                                <>
-                                                    <button className="btn btn-accept" onClick={() => handleAction(swap.swapId, 'accept')}>Accept</button>
-                                                    <button className="btn btn-reject" onClick={() => handleAction(swap.swapId, 'reject')}>Reject</button>
-                                                </>
-                                            )}
-                                            
-                                            {/* ACTIVE ACTION  */}
-                                            {swap.status === 'ACCEPTED' && (
-                                                <button className="btn btn-complete" onClick={() => handleAction(swap.swapId, 'complete')}>✔ Mark Complete</button>
-                                            )}
-                                            
-                                            {/* COMPLETED ACTION */}
-                                            {swap.status === 'COMPLETED' && (
-                                                <button className="btn btn-review" onClick={() => handleLeaveReviewClick(swap)}>★ Leave Review</button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     )}
                 </div>
+
+                {/* --- RENDER DETAILS MODAL --- */}
+                {detailsSwap && (
+                    <div className="details-modal-overlay" onClick={() => setDetailsSwap(null)}>
+                        <div className="details-modal-content" onClick={(e) => e.stopPropagation()}>
+                            <h2 className="details-title">Swap Details</h2>
+                            
+                            <div className="details-row">
+                                <span className="details-label">Skill</span>
+                                <div className="details-value">{detailsSwap.targetOffer.skill.name}</div>
+                            </div>
+                            
+                            <div className="details-row">
+                                <span className="details-label">Category</span>
+                                <div className="details-value">{detailsSwap.targetOffer.skill.category || 'General'}</div>
+                            </div>
+                            
+                            <div className="details-row">
+                                <span className="details-label">Description</span>
+                                <div className="details-value" style={{fontSize: '0.95rem', color: '#555'}}>
+                                    "{detailsSwap.targetOffer.description}"
+                                </div>
+                            </div>
+
+                            <div className="details-row">
+                                <span className="details-label">Status</span>
+                                <div className="details-value" style={{textTransform:'uppercase', color: '#007bff'}}>
+                                    {detailsSwap.status}
+                                </div>
+                            </div>
+
+                            <button className="close-details-btn" onClick={() => setDetailsSwap(null)}>Close</button>
+                        </div>
+                    </div>
+                )}
 
                 {/* --- RENDER REVIEW MODAL --- */}
                 {showReviewModal && reviewTargetSwap && (

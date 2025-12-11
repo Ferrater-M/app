@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.example.bytemates.skillswap.dto.SkillOfferDto;
+import com.example.bytemates.skillswap.entity.OfferStatus;
 import com.example.bytemates.skillswap.entity.SkillEntity;
 import com.example.bytemates.skillswap.entity.SkillOfferEntity;
 import com.example.bytemates.skillswap.entity.UserEntity;
@@ -27,14 +28,11 @@ public class SkillOfferService {
     private final ReviewRepository reviewRepository; 
 
     public List<SkillOfferDto> getAllAvailableOffers() {
-        List<SkillOfferEntity> offers = skillOfferRepository.findAvailableOffers(); 
+        List<SkillOfferEntity> offers = skillOfferRepository.findByStatus(OfferStatus.AVAILABLE); 
         
         return offers.stream().map(offer -> {
             Long userId = offer.getUser().getUserId();
-            
-            Double avgRating = reviewRepository.findAverageRatingByReviewedUserId(userId)
-                                              .orElse(0.0);
-            
+            Double avgRating = reviewRepository.findAverageRatingByReviewedUserId(userId).orElse(0.0);
             return new SkillOfferDto(offer, avgRating);
         }).collect(Collectors.toList());
     }
@@ -44,7 +42,7 @@ public class SkillOfferService {
     }
     
     public void deleteOffer(Long offerId) {
-        skillOfferRepository.deleteById(offerId); 
+        skillOfferRepository.deleteById(offerId);
     }
 
     public SkillOfferEntity createOffer(Long userId, String skillName, String category, String description, String availability, String lookingFor) {
@@ -67,6 +65,7 @@ public class SkillOfferService {
                 .availability(availability)
                 .lookingFor(lookingFor)
                 .date(LocalDate.now()) 
+                .status(OfferStatus.AVAILABLE)
                 .build();
 
         return skillOfferRepository.save(offer);

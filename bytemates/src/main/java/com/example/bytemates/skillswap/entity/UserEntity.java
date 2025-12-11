@@ -1,5 +1,6 @@
 package com.example.bytemates.skillswap.entity;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,8 +40,8 @@ public class UserEntity implements UserDetails {
     private String password;
 
     private String school;
-
-    // --- UserDetails Implementation ---
+    
+    private LocalDate dateJoined; 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

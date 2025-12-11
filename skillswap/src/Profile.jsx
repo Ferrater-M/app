@@ -12,7 +12,6 @@ const Profile = () => {
     const [activeTab, setActiveTab] = useState('offers');
     const [loading, setLoading] = useState(true);
     
-    // Notification State
     const [notificationCount, setNotificationCount] = useState(0); 
     
     const [showOfferModal, setShowOfferModal] = useState(false);
@@ -23,8 +22,14 @@ const Profile = () => {
 
     // Helper to get Auth Headers
     const getAuthHeaders = () => {
-        const authHeader = localStorage.getItem('authHeader');
-        return authHeader ? { 'Authorization': authHeader } : {};
+        const token = localStorage.getItem('token');
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
+    };
+
+    // Date Formatter
+    const formatDate = (dateString) => {
+        if (!dateString) return new Date().toLocaleDateString('en-GB'); 
+        return new Date(dateString).toLocaleDateString('en-GB'); 
     };
 
     useEffect(() => {
@@ -42,20 +47,22 @@ const Profile = () => {
             }
 
             try {
-                // Fetch Data (GET requests usually don't need auth if public, but good practice to add if needed)
-                const offersRes = await axios.get(`http://localhost:8080/api/offers/user/${parsedUser.userId}`);
+                const headers = getAuthHeaders();
+                const offersRes = await axios.get(`http://localhost:8080/api/offers/user/${parsedUser.userId}`, { headers });
                 setMyOffers(offersRes.data);
 
-                const reviewsRes = await axios.get(`http://localhost:8080/api/reviews/user/${parsedUser.userId}`);
+                const reviewsRes = await axios.get(`http://localhost:8080/api/reviews/user/${parsedUser.userId}`, { headers });
                 setMyReviews(reviewsRes.data);
 
-                const requestsRes = await axios.get(`http://localhost:8080/api/requests/user/${parsedUser.userId}`);
+                const requestsRes = await axios.get(`http://localhost:8080/api/requests/user/${parsedUser.userId}`, { headers });
                 setMyRequests(requestsRes.data);
 
             } catch (err) {
                 console.error("Error loading profile", err);
             } finally {
-                setLoading(false);
+                setTimeout(() => {
+                    setLoading(false);
+                }, 1000); 
             }
         };
         init();
@@ -71,21 +78,17 @@ const Profile = () => {
         }
     };
 
-    // --- FIXED DELETE OFFER (Added Headers) ---
     const handleDeleteOffer = async (id) => {
         if(window.confirm("Are you sure you want to delete this offer? This cannot be undone.")) {
             try {
                 await axios.delete(`http://localhost:8080/api/offers/${id}`, { 
-                    headers: getAuthHeaders() // FIX: Send Credentials
+                    headers: getAuthHeaders() 
                 });
-                
                 setMyOffers(prev => prev.filter(o => o.offerId !== id));
             } catch (error) {
                 console.error("Delete error:", error);
-                // 401 = Not Logged In, 500 = Server Error (likely foreign key constraint if linked to swap)
                 if (error.response?.status === 401) {
-                    alert("Session expired. Please log in again.");
-                    navigate('/login');
+                    alert("Skill might be in active.");
                 } else {
                     alert("Deletion failed! Note: You cannot delete a skill that is part of an active Swap.");
                 }
@@ -93,12 +96,11 @@ const Profile = () => {
         }
     };
 
-    // --- FIXED DELETE REQUEST (Added Headers) ---
     const handleDeleteRequest = async (id) => {
         if(window.confirm("Are you sure you want to remove this skill request?")) {
             try {
                 await axios.delete(`http://localhost:8080/api/requests/${id}`, { 
-                    headers: getAuthHeaders() // FIX: Send Credentials
+                    headers: getAuthHeaders()
                 });
                 setMyRequests(prev => prev.filter(r => r.id !== id));
             } catch (error) {
@@ -115,13 +117,12 @@ const Profile = () => {
 
     const handleOfferChange = (e) => { setOfferForm({ ...offerForm, [e.target.name]: e.target.value }); };
     
-    // --- FIXED ADD OFFER (Added Headers) ---
     const submitOffer = async (e) => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:8080/api/offers/add', 
                 { ...offerForm, userId: user.userId },
-                { headers: getAuthHeaders() } // FIX: Send Credentials
+                { headers: getAuthHeaders() }
             );
             setShowOfferModal(false);
             setOfferForm({ skillName: '', category: 'Programming', description: '', availability: '', lookingFor: '' });
@@ -134,13 +135,12 @@ const Profile = () => {
 
     const handleRequestChange = (e) => { setRequestForm({ ...requestForm, [e.target.name]: e.target.value }); };
     
-    // --- FIXED ADD REQUEST (Added Headers) ---
     const submitRequest = async (e) => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:8080/api/requests/add', 
                 { ...requestForm, userId: user.userId },
-                { headers: getAuthHeaders() } // FIX: Send Credentials
+                { headers: getAuthHeaders() }
             );
             setShowRequestModal(false);
             setRequestForm({ skillName: '', category: 'Programming', description: '' });
@@ -161,18 +161,22 @@ const Profile = () => {
         html, body, #root { width: 100%; min-height: 100vh; font-family: 'Inter', sans-serif; background-color: #FFF8E1; }
         .profile-body { width: 100%; min-height: 100vh; background: #FFF8E1; }
 
+        /* LOADING */
+        .loading-container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100vw; background-color: #FFF8E1; position: fixed; top: 0; left: 0; z-index: 2000; }
+        .loading-spinner { width: 50px; height: 50px; border: 5px solid rgba(0, 0, 0, 0.1); border-top: 5px solid #FFC300; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .loading-text { font-size: 1.2rem; font-weight: 700; color: #060606; letter-spacing: 1px; text-transform: uppercase; animation: pulse 1.5s infinite ease-in-out; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
         /* NAVBAR */
         .navbar { background: linear-gradient(135deg, #f7d33f 0%, #f5b423 100%); padding: 16px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #060606; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; }
         .nav-left { display: flex; align-items: center; gap: 48px; }
         .logo { font-size: 1.75rem; font-weight: 800; color: #060606; letter-spacing: -0.5px; cursor: pointer; }
         .nav-tabs { display: flex; gap: 8px; background: rgba(255,255,255,0.3); padding: 6px; border-radius: 30px; }
-        
         .nav-tab { position: relative; display: flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 24px; text-decoration: none; color: #060606; font-weight: 600; transition: all 0.3s ease; border: none; background: transparent; cursor: pointer; font-size: 0.95rem; font-family: 'Inter', sans-serif; }
         .nav-tab:hover { background: rgba(122,0,0,0.1); transform: translateY(-2px); }
         .nav-tab.active { background: #060606; color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        
         .notification-badge { position: absolute; top: 5px; right: 5px; background: #dc3545; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; padding: 2px; line-height: 1; z-index: 10; }
-
         .nav-right { display: flex; align-items: center; gap: 16px; }
         .avatar { width: 44px; height: 44px; background: linear-gradient(135deg, maroon 0%, #5a0000 100%); color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; border: 3px solid #fff; box-shadow: 0 0 0 2px #000; cursor: default; }
 
@@ -211,6 +215,12 @@ const Profile = () => {
         .request-badge-black { background: #000; color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; margin-right: 8px; }
         .request-badge-gray { background: #f5f5f5; color: #333; border: 1px solid #ddd; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
         
+        /* STATUS PILLS */
+        .status-pill { padding: 2px 8px; border-radius: 10px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; margin-left: 10px; border: 1px solid #ddd; }
+        .pill-available { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .pill-active { background: #cce5ff; color: #004085; border-color: #b8daff; }
+        .pill-completed { background: #e2e3e5; color: #383d41; border-color: #d6d8db; }
+
         /* Review Card */
         .review-card { background: white; border: 1px solid #e0e0e0; border-radius: 20px; padding: 20px; margin-bottom: 12px; }
         .review-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
@@ -236,7 +246,7 @@ const Profile = () => {
         .submit-btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
     `;
 
-    if (loading) return <div style={{textAlign: 'center', padding: '50px'}}>Loading...</div>;
+    if (loading) return <div className="loading-container"><div className="loading-spinner"></div><div className="loading-text">Loading Profile...</div><style>{styles}</style></div>;
 
     return (
         <>
@@ -270,7 +280,7 @@ const Profile = () => {
                                 <p>Web developer passionate about teaching and learning.</p>
                                 <div className="meta-info">
                                     <span>📍 {user?.school || 'University'}</span>
-                                    <span>📅 Joined 2025</span>
+                                    <span>📅 Joined {formatDate(user?.dateJoined)}</span>
                                 </div>
                                 <span className="logout-link" onClick={handleLogout}>Log Out</span>
                             </div>
@@ -297,11 +307,15 @@ const Profile = () => {
                                 myOffers.map(offer => (
                                     <div className="offer-card" key={offer.offerId}>
                                         <div className="card-top">
-                                            <div className="skill-name">{offer.skill?.name}</div>
+                                            <div style={{display:'flex', alignItems:'center'}}>
+                                                <div className="skill-name">{offer.skill?.name}</div>
+                                                <span className={`status-pill pill-${offer.status ? offer.status.toLowerCase() : 'available'}`}>
+                                                    {offer.status || 'AVAILABLE'}
+                                                </span>
+                                            </div>
                                             <button className="delete-btn" onClick={() => handleDeleteOffer(offer.offerId)}>🗑</button>
                                         </div>
                                         <div className="badge-row">
-                                            <span className="request-badge-black">expert</span>
                                             <span className="request-badge-gray">{offer.skill?.category}</span>
                                         </div>
                                         <p style={{color:'#555', fontSize:'0.95rem'}}>{offer.description}</p>
