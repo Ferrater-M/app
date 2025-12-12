@@ -44,13 +44,11 @@ const Dashboard = () => {
 
     const fetchSkillOffers = async () => {
         try {
-            // API call returns SkillOfferDto with real averageRating and filters completed offers
             const response = await axios.get('http://localhost:8080/api/offers');
             
             const enrichedOffers = response.data.map((offer) => ({
                 ...offer,
                 icon: offer.user?.name ? offer.user.name.charAt(0).toUpperCase() : 'U',
-                // Uses the real averageRating field provided by the backend DTO
                 rating: offer.averageRating ? parseFloat(offer.averageRating).toFixed(1) : '0.0'
             }));
             setSkillOffers(enrichedOffers);
@@ -81,116 +79,183 @@ const Dashboard = () => {
     const styles = `
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body, #root { width: 100%; min-height: 100vh; font-family: 'Inter', sans-serif; background-color: #fff7e1; }
-        .dashboard-body { width: 100vw; min-height: 100vh; background: #fff7e1; overflow-x: hidden; }
+        .dashboard-body { width: 100vw; min-height: 100vh; background: linear-gradient(135deg, #FFF8E1 0%, #FFE082 100%); overflow-x: hidden; }
 
-        /* Navbar */
-        .navbar { background: linear-gradient(135deg, #f7d33f 0%, #f5b423 100%); padding: 16px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #060606; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; }
-        .nav-left { display: flex; align-items: center; gap: 48px; }
-        .logo { font-size: 1.75rem; font-weight: 800; color: #060606; letter-spacing: -0.5px; cursor: pointer; }
+        /* --- NAVBAR (Copied from Messages) --- */
+        .navbar { 
+            background: linear-gradient(135deg, #f7d33f 0%, #f5b423 100%); 
+            padding: 18px 5vw; /* Consistent with other components */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 3px solid #060606; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+        }
+        .nav-left { display: flex; align-items: center; gap: 60px; }
+        .logo { font-size: 2rem; font-weight: 900; color: #060606; letter-spacing: -0.8px; cursor: pointer; transition: transform 0.2s; }
+        .logo:hover { transform: scale(1.05); }
         
-        .nav-tabs { display: flex; gap: 8px; background: rgba(255,255,255,0.3); padding: 6px; border-radius: 30px; backdrop-filter: blur(10px); }
+        .nav-tabs { display: flex; gap: 10px; background: rgba(255,255,255,0.35); padding: 8px; border-radius: 50px; backdrop-filter: blur(10px); }
         .nav-tab { 
             position: relative; 
-            display: flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 24px; 
-            text-decoration: none; color: #060606; font-weight: 600; transition: all 0.3s ease; 
-            border: none; background: transparent; cursor: pointer; font-size: 0.95rem; font-family: 'Inter', sans-serif; 
+            padding: 14px 28px; 
+            border-radius: 30px; 
+            color: #060606; 
+            font-weight: 600; 
+            transition: all 0.3s ease; 
+            border: none; 
+            background: transparent; 
+            cursor: pointer; 
+            font-size: 0.95rem; 
         }
-        .nav-tab:hover { background: rgba(122,0,0,0.1); transform: translateY(-2px); }
-        .nav-tab.active { background: #060606; color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .nav-tab:hover { background: rgba(6,6,6,0.08); transform: translateY(-2px); }
+        .nav-tab.active { background: #060606; color: #FFC300; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
         
-        /* Notification Badge Style */
         .notification-badge {
-            position: absolute; top: 5px; right: 5px; background: #dc3545; color: white;
-            border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center;
-            justify-content: center; font-size: 0.7rem; font-weight: 700; padding: 2px;
-            line-height: 1; z-index: 10;
+            position: absolute; top: 6px; right: 8px; background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); 
+            color: white; border-radius: 50%; min-width: 22px; height: 22px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 0.7rem; font-weight: 800; line-height: 1;
         }
 
         .nav-right { display: flex; align-items: center; gap: 16px; }
-        .avatar { width: 44px; height: 44px; background: linear-gradient(135deg, maroon 0%, #5a0000 100%); color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(122,0,0,0.3); cursor: pointer; }
-
-        /* Main Content */
-        .main-content { padding: 40px; max-width: 1200px; margin: 0 auto; width: 100%; }
-        .page-header { margin-bottom: 24px; text-align: center; } 
-        .page-title { font-size: 2rem; font-weight: 800; color: #060606; margin-bottom: 10px; }
-        .page-subtitle { color: #666666; font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+        .avatar { 
+            width: 48px; height: 48px; 
+            background: linear-gradient(135deg, #8B0000 0%, #5a0000 100%); 
+            color: #FFC300; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: 800; font-size: 1.2rem; 
+            border: 3px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+            cursor: pointer;
+        }
         
-        /* SEARCH (ROUNDER PILL SHAPE) */
+        /* Main Content */
+        .main-content { padding: 40px 5vw; max-width: 1400px; margin: 0 auto; width: 100%; }
+        .page-header { margin-bottom: 40px; text-align: center; padding-top: 20px; } 
+        .page-title { 
+            font-size: 2.8rem; 
+            font-weight: 900; 
+            color: #060606; 
+            margin-bottom: 15px; 
+            letter-spacing: -1px;
+            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+        }
+        .page-subtitle { color: #444; font-size: 1.2rem; max-width: 700px; margin: 0 auto; font-weight: 500;}
+        
+        /* SEARCH (IMPROVED DESIGN) */
         .search-container { 
-            display: flex; gap: 15px; margin: 40px 0; width: 100%; 
-            background: rgba(255,255,255,0.5); padding: 10px; border-radius: 60px; 
+            display: flex; gap: 20px; margin: 50px 0; width: 100%; 
+            background: #ffffff; 
+            padding: 12px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 2px solid #f0f0f0;
         }
         
         .search-wrapper { position: relative; flex-grow: 1; }
-        .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #999; }
+        .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #666; width: 20px; height: 20px; }
         
         .search-bar { 
-            width: 100%; padding: 16px 20px; padding-left: 50px; 
-            border: 1px solid #ddd; border-radius: 50px; 
-            font-size: 1rem; background: #ffffff; color: #000000 !important; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            width: 100%; padding: 18px 20px; padding-left: 55px; 
+            border: none; border-radius: 12px; 
+            font-size: 1.1rem; background: #f8f8f8; color: #000000 !important; 
+            transition: all 0.3s ease;
         }
-        .search-bar:focus { outline: 2px solid #f5b423; border-color: #f5b423; }
+        .search-bar:focus { outline: none; background: #fff; box-shadow: 0 0 0 3px #f5b423; }
 
         .category-select {
-            width: 200px; padding: 0 25px; 
-            border-radius: 50px; 
-            border: 1px solid #ddd; background-color: #ffffff; 
-            font-size: 1rem; cursor: pointer; color: #060606;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            min-width: 250px; padding: 10px 25px; 
+            border-radius: 12px; 
+            border: 2px solid #ddd; background-color: #ffffff; 
+            font-size: 1.1rem; cursor: pointer; color: #060606;
+            appearance: none; /* Hide default arrow */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%20viewBox%3D%220%200%20292.4%20292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%20287.5c-4.1%204.1-10.8%204.1-14.9%200L146.2%20146.7%2020.3%20287.5c-4.1%204.1-10.8%204.1-14.9%200-4.1-4.1-4.1-10.8%200-14.9L138.7%20139l-133.3-132.8c-4.1-4.1-4.1-10.8%200-14.9%204.1-4.1%2010.8-4.1%2014.9%200L146.2%20124.5l125.7-125.2c4.1-4.1%2010.8-4.1%2014.9%200%204.1%204.1%204.1%2010.8%200%2014.9L161.1%20139l125.7%20125.2c4.1%204.1%204.1%2010.8%200%2014.9z%22%2F%3E%3C%2Fsvg%3E') !important;
+            background-position: calc(100% - 15px) center !important;
+            background-repeat: no-repeat !important;
+            background-size: 10px !important;
+            height: 56px; /* Match search bar height */
         }
+        .category-select:focus { outline: 2px solid #f5b423; border-color: #f5b423; }
 
         /* GRID */
-        .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 30px; width: 100%; }
+        .skills-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+            gap: 35px; 
+            width: 100%; 
+            padding-bottom: 50px;
+        }
         
-        /* CARD (ROUNDER EDGES) */
+        /* CARD (IMPROVED DESIGN) */
         .skill-card { 
             background: #ffffff; 
-            border-radius: 24px; 
-            padding: 28px; 
-            border: 1px solid #f0f0f0; 
+            border-radius: 20px; 
+            padding: 30px; 
+            border: 1px solid #e0e0e0; 
             transition: all 0.3s ease; display: flex; flex-direction: column; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
         }
-        .skill-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(245, 180, 35, 0.15); border-color: #f5b423; }
+        .skill-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 20px 40px rgba(245, 180, 35, 0.2); 
+            border-color: #f7d33f; 
+        }
         
-        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .user-click-area { display: flex; align-items: center; gap: 15px; } 
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .user-click-area { display: flex; align-items: center; gap: 15px; cursor: pointer; } 
 
-        .user-avatar { width: 52px; height: 52px; background: #fff7e1; border: 2px solid #f5b423; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.3rem; color: #060606; }
-        .user-info h3 { font-size: 1.1rem; font-weight: 700; color: #060606; }
-        .user-info p { font-size: 0.9rem; color: #666666; }
+        .user-avatar { 
+            width: 48px; height: 48px; 
+            background: linear-gradient(135deg, #060606 0%, #333 100%); 
+            border: 3px solid #f5b423; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: 700; font-size: 1.1rem; color: #fff; 
+        }
+        .user-info h3 { font-size: 1.1rem; font-weight: 800; color: #060606; margin-bottom: 2px; }
+        .user-info p { font-size: 0.9rem; color: #f5b423; font-weight: 600; } /* Highlight Rating */
         
-        .skill-title { font-size: 1.25rem; font-weight: 800; color: #060606; margin-bottom: 10px; }
-        .skill-description { font-size: 0.95rem; color: #555; line-height: 1.6; margin-bottom: 20px; flex-grow: 1; }
+        .skill-title { font-size: 1.5rem; font-weight: 900; color: #060606; margin-bottom: 10px; }
+        .skill-description { font-size: 1rem; color: #555; line-height: 1.7; margin-bottom: 20px; flex-grow: 1; }
         
         .wants-section { 
             background: #fff9f9; 
-            padding: 10px 15px; 
+            padding: 12px 18px; 
             border-radius: 12px; 
             margin-bottom: 20px; 
-            border: 1px dashed maroon; 
+            border: 1px solid #cc0000; 
         }
-        .wants-label { font-size: 0.75rem; font-weight: 800; color: maroon; text-transform: uppercase; letter-spacing: 0.5px; }
-        .wants-text { font-size: 0.95rem; font-weight: 600; color: #333; }
+        .wants-label { font-size: 0.75rem; font-weight: 800; color: #cc0000; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block; }
+        .wants-text { font-size: 1rem; font-weight: 600; color: #333; }
 
-        .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #f5f5f5; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #f0f0f0; }
         .swap-info { font-size: 0.85rem; color: #888; font-weight: 500; }
         
         .view-btn { 
-            background: #060606; 
-            color: #ffffff; border: none; 
-            padding: 10px 24px; 
+            background: linear-gradient(135deg, #000 0%, #333 100%); 
+            color: #FFC300; border: none; 
+            padding: 12px 28px; 
             border-radius: 30px; 
-            font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; 
+            font-size: 1rem; font-weight: 700; cursor: pointer; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        .view-btn:hover { background: #333; transform: scale(1.05); }
+        .view-btn:hover { background: #333; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
 
-        .no-results { text-align: center; padding: 3rem; color: #666; grid-column: 1 / -1; }
+        .no-results { text-align: center; padding: 5rem 1rem; color: #666; grid-column: 1 / -1; font-size: 1.2rem; }
         
-        @media (max-width: 768px) {
-            .search-container { flex-direction: column; background: transparent; padding: 0; }
-            .category-select { width: 100%; height: 50px; }
+        @media (max-width: 900px) {
+            .navbar { padding: 18px 20px; }
+            .nav-tabs { display: none; }
+            .main-content { padding: 20px; }
+            .page-title { font-size: 2rem; }
+            .page-subtitle { font-size: 1rem; }
+            .search-container { flex-direction: column; padding: 10px; }
+            .category-select { min-width: 100%; margin-top: 10px; }
+            .skills-grid { grid-template-columns: 1fr; gap: 25px; }
         }
     `;
 
@@ -198,18 +263,17 @@ const Dashboard = () => {
         <>
             <style>{styles}</style>
             <div className="dashboard-body">
+                {/* --- NAVBAR (Modern Shared Design) --- */}
                 <nav className="navbar">
                     <div className="nav-left">
                         <div className="logo" onClick={() => navigate('/dashboard')}>SkillSwap</div>
                         <div className="nav-tabs">
                             <button className="nav-tab active" onClick={() => navigate('/dashboard')}>Browse Skills</button>
                             
-                            {/* MESSAGES TAB (No badge) */}
                             <button className="nav-tab" onClick={() => navigate('/messages')}>
                                 Messages
                             </button>
                             
-                            {/* MY SWAPS TAB (Notification badge moved here) */}
                             <button className="nav-tab" onClick={() => navigate('/myswaps')}>
                                 MySwaps
                                 {notificationCount > 0 && (
@@ -221,7 +285,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                     <div className="nav-right">
-                        <div className="avatar" onClick={() => navigate('/profile')}>{user?.name?.charAt(0) || 'M'}</div>
+                        <div className="avatar" onClick={() => navigate('/profile')}>{user?.name?.charAt(0) || 'U'}</div>
                     </div>
                 </nav>
 
@@ -261,15 +325,15 @@ const Dashboard = () => {
                             <div className="no-results"><p>Loading skills...</p></div>
                         ) : filteredSkills.length === 0 ? (
                             <div className="no-results">
-                                <p>No skills found.</p>
+                                <p>No skills found matching your criteria.</p>
                             </div>
                         ) : (
                             filteredSkills.map((skill, index) => (
                                 <div className="skill-card" key={index}>
                                     <div className="card-header">
-                                        {/* No Profile Visit logic */}
                                         <div 
                                             className="user-click-area"
+                                            // Ideally, this should navigate to a profile page
                                         >
                                             <div className="user-avatar">{skill.icon}</div>
                                             <div className="user-info">
@@ -304,7 +368,6 @@ const Dashboard = () => {
                         onClose={() => setSelectedOffer(null)} 
                     />
                 )}
-                
             </div>
         </>
     );
