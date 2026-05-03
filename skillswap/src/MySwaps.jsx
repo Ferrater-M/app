@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom'; // FIX: Corrected import source for useNavigate
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Loading from './Loading';
 
 // ====================================================================
 // Simplified ReviewModal Component (Included for single-file mandate)
@@ -24,23 +25,20 @@ const ReviewModal = ({ swap, onClose, onSuccess }) => {
         try {
             const reviewData = {
                 swapId: swap.swapId,
-                recipientId: recipient.userId,
+                reviewedUserId: recipient.userId,
                 reviewerId: currentUserId,
                 rating,
-                comment,
-                // Assuming date is generated on the backend
+                comment
             };
 
-            const token = localStorage.getItem('token');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await axios.post('http://localhost:8080/api/reviews/submit', reviewData);
 
-            await axios.post('http://localhost:8080/api/reviews/add', reviewData, { headers });
-
-            alert("Review submitted successfully!");
+            alert(response.data || "Review submitted successfully!");
             onSuccess();
         } catch (err) {
             console.error("Failed to submit review:", err);
-            setError("Failed to submit review. Please try again.");
+            const message = err.response?.data || "Failed to submit review. Please try again.";
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -731,7 +729,7 @@ const MySwaps = () => {
         }
     `;
 
-    if (loading) return <div style={{textAlign: 'center', padding: '50px', fontSize: '1.2rem', fontWeight: '600', color: '#060606'}}>Loading your swaps...</div>;
+    if (loading) return <Loading text="Loading your swaps..." />;
 
     return (
         <>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import Loading from './Loading';
 
 const Messages = () => {
     const navigate = useNavigate();
@@ -561,7 +562,7 @@ const Messages = () => {
         }
     `;
 
-    if (loading) return <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#FFF8E1'}}>Loading messages...</div>;
+    if (loading) return <Loading text="Loading messages..." />;
 
     return (
         <>
