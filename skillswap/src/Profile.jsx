@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Loading from './Loading';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -681,7 +682,7 @@ const Profile = () => {
         }
     `;
 
-    if (loading) return <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'linear-gradient(135deg, #FFF8E1 0%, #FFE082 100%)', fontSize: '1.2rem', fontWeight: '600'}}>Loading your profile...</div>;
+    if (loading) return <Loading text="Loading your profile..." />;
 
     return (
         <>

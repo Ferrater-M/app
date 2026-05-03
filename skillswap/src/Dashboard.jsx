@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import OfferDetails from './OfferDetails'; 
+import OfferDetails from './OfferDetails';
+import Loading from './Loading'; 
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -259,6 +260,10 @@ const Dashboard = () => {
         }
     `;
 
+    if (loading) {
+        return <Loading text="Loading skills..." />;
+    }
+
     return (
         <>
             <style>{styles}</style>
@@ -321,9 +326,7 @@ const Dashboard = () => {
                     </div>
 
                     <div className="skills-grid">
-                        {loading ? (
-                            <div className="no-results"><p>Loading skills...</p></div>
-                        ) : filteredSkills.length === 0 ? (
+                        {filteredSkills.length === 0 ? (
                             <div className="no-results">
                                 <p>No skills found matching your criteria.</p>
                             </div>
