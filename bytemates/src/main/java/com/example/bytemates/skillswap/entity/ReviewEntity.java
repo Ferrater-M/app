@@ -23,7 +23,7 @@ public class ReviewEntity {
     @JoinColumn(name = "reviewer_id", nullable = false) 
     private UserEntity reviewer;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "swap_id")
     private SkillSwapEntity swap;
 
